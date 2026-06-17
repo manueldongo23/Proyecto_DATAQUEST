@@ -750,9 +750,52 @@ List paginated schemas.
 
 Get schema detail.
 
+### POST /schemas/{id}/open
+
+Open a saved project from the Projects module and register the access event for the authenticated user.
+
+### GET /schemas/{id}/versions
+
+List saved validation versions for a schema, ordered from newest to oldest.
+
+### POST /schemas/{id}/versions/{validationId}/restore
+
+Restore a schema to a previously saved validation snapshot.
+
+### PATCH /schemas/{id}
+
+Update schema metadata and, optionally, its stored attributes or functional dependencies.
+
+**Request:**
+```json
+{
+  "nombre": "Sistema de Ventas",
+  "descripcion": "Modelo principal del proyecto",
+  "estructura_json": ["idVenta", "idCliente", "fechaVenta"],
+  "dependencias_json": [
+    {
+      "determinant": ["idVenta"],
+      "dependent": ["idCliente", "fechaVenta"]
+    }
+  ]
+}
+```
+
+### PATCH /schemas/{id}/archive
+
+Archive a schema without deleting its history.
+
+### PATCH /schemas/{id}/restore
+
+Restore an archived schema back to the active project list.
+
 ### DELETE /schemas/{id}
 
 Delete a schema.
+
+### GET /activity
+
+Return the authenticated user's activity timeline, combining validation events and system logs.
 
 ---
 

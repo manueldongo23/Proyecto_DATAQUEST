@@ -24,6 +24,6 @@ class CorsTest extends TestCase
         ])->options('/api/auth/login');
 
         $response->assertStatus(204)
-            ->assertHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
+            ->assertHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     }
 }

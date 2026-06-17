@@ -15,7 +15,6 @@ bootstrap/cache/*.php
 
 ## Composer
 composer.phar
-composer.lock
 
 ## OS
 .DS_Store

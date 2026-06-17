@@ -16,6 +16,6 @@ jobs:
         with:
           php-version: '8.2'
           extensions: pdo, sqlite
-      - run: composer install --no-interaction --prefer-dist
+      - run: composer install --no-interaction --prefer-dist --no-progress
       - name: Check for documentation drift
         run: php vendor/bin/phpunit --filter=DocsDriftTest --no-coverage

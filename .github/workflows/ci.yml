@@ -22,7 +22,7 @@ jobs:
           coverage: xdebug
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Copy .env
         run: cp .env.example .env
@@ -37,7 +37,7 @@ jobs:
         run: find app -name "*.php" -exec php -l {} \;
 
       - name: Run tests
-        run: php artisan test
+        run: php -d max_execution_time=0 vendor/bin/phpunit
 
   frontend:
     name: Frontend (TypeScript)

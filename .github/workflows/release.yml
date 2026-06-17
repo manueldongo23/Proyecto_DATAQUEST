@@ -20,7 +20,7 @@ jobs:
           extensions: pdo, sqlite, pdo_sqlite
       
       - name: Install PHP dependencies
-        run: composer install --no-interaction --prefer-dist --no-dev
+        run: composer install --no-interaction --prefer-dist --no-progress --no-dev
       
       - name: Setup Node
         uses: actions/setup-node@v4
