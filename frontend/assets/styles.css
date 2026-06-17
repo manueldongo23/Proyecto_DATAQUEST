@@ -1,0 +1,66 @@
+.tab-active {
+    background-color: #4f46e5;
+    color: white;
+    border-bottom: 2px solid #c7d2fe;
+}
+.tab-inactive {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    transition: 0.2s;
+    box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15);
+}
+
+/* Nuevas utilidades UI/UX */
+.glass-panel {
+    background: rgba(32, 33, 61, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.float-animation {
+    animation: float 6s ease-in-out infinite;
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+/* Timeline */
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, #6366f1 0%, #e2e8f0 100%);
+}

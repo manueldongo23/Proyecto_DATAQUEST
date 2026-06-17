@@ -1,0 +1,18 @@
+{
+  "validation.required": "Este campo \u00e9 obrigat\u00f3rio",
+  "validation.email": "Formato de e-mail inv\u00e1lido",
+  "validation.min": "M\u00ednimo de :min caracteres",
+  "validation.max": "M\u00e1ximo de :max caracteres",
+  "validation.unique": "Este valor j\u00e1 est\u00e1 registrado",
+  "validation.confirmed": "Senhas n\u00e3o conferem",
+  "auth.failed": "Credenciais inv\u00e1lidas",
+  "auth.blocked": "Conta desabilitada",
+  "name.blocked": "Este apelido cont\u00e9m termos bloqueados",
+  "schema.invalid": "O esquema cont\u00e9m dados inv\u00e1lidos",
+  "schema.large": "O esquema \u00e9 muito grande",
+  "server.error": "Erro interno do servidor",
+  "not_found": "Recurso n\u00e3o encontrado",
+  "success.created": "Criado com sucesso",
+  "success.updated": "Atualizado com sucesso",
+  "success.deleted": "Exclu\u00eddo com sucesso"
+}

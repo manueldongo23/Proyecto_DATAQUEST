@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dataquest-app
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:GENERATE_WITH_php_artisan_key_generate
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=dataquest
+      - DB_USERNAME=dataquest
+      - DB_PASSWORD=dataquest
+      - CACHE_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+      - /app/vendor
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - dataquest-network
+    command: php artisan serve --host=0.0.0.0
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: dataquest-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dataquest
+      POSTGRES_USER: dataquest
+      POSTGRES_PASSWORD: dataquest
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dataquest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataquest"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dataquest-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dataquest-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dataquest-frontend
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - app
+    networks:
+      - dataquest-network
+    command: npm run dev
+
+  nginx:
+    image: nginx:alpine
+    container_name: dataquest-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./:/app
+    depends_on:
+      - app
+      - frontend
+    networks:
+      - dataquest-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  dataquest-network:
+    driver: bridge

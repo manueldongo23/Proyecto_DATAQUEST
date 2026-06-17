@@ -1,0 +1,21 @@
+name: Documentation Drift Check
+
+on:
+  pull_request:
+    paths:
+      - 'routes/api.php'
+      - 'API_DOCUMENTATION.md'
+      - 'docs/openapi.yaml'
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, sqlite
+      - run: composer install --no-interaction --prefer-dist
+      - name: Check for documentation drift
+        run: php vendor/bin/phpunit --filter=DocsDriftTest --no-coverage

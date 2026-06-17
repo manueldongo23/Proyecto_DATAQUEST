@@ -1,0 +1,34 @@
+## Laravel
+/vendor/
+.env
+.env.production
+.phpunit.cache/
+storage/framework/cache/data/
+storage/framework/sessions/
+storage/framework/views/
+storage/logs/*.log
+bootstrap/cache/*.php
+
+## Node
+/frontend/node_modules/
+/frontend/dist/
+
+## Composer
+composer.phar
+composer.lock
+
+## OS
+.DS_Store
+Thumbs.db
+
+## IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+## Database
+*.sqlite
+*.sqlite3
+/dataquest/
+/dataquest.zip

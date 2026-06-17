@@ -1,0 +1,18 @@
+{
+  "validation.required": "This field is required",
+  "validation.email": "Invalid email format",
+  "validation.min": "Minimum :min characters required",
+  "validation.max": "Maximum :max characters allowed",
+  "validation.unique": "This value is already taken",
+  "validation.confirmed": "Passwords do not match",
+  "auth.failed": "Invalid credentials",
+  "auth.blocked": "Account disabled",
+  "name.blocked": "This nickname contains blocked terms",
+  "schema.invalid": "The schema contains invalid data",
+  "schema.large": "The schema is too large",
+  "server.error": "Internal server error",
+  "not_found": "Resource not found",
+  "success.created": "Created successfully",
+  "success.updated": "Updated successfully",
+  "success.deleted": "Deleted successfully"
+}

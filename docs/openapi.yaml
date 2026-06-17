@@ -1,0 +1,1815 @@
+openapi: "3.0.3"
+info:
+  title: DataQuest API
+  description: API for interactive database normalization academy
+  version: "1.0.0"
+  contact:
+    email: support@dataquest.com
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local development
+  - url: https://api.dataquest.com/api
+    description: Production
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        correo:
+          type: string
+          format: email
+        apodo:
+          type: string
+        role:
+          type: string
+          enum: [usuario, administrador]
+        xp:
+          type: integer
+        rango:
+          type: string
+        activo:
+          type: boolean
+
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        user:
+          $ref: '#/components/schemas/User'
+
+    ValidationRequest:
+      type: object
+      required: [table_name, attributes, dependencies]
+      properties:
+        table_name:
+          type: string
+          maxLength: 100
+        attributes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 100
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionalDependency'
+          maxItems: 200
+
+    FunctionalDependency:
+      type: object
+      required: [determinant, dependent]
+      properties:
+        determinant:
+          type: array
+          items:
+            type: string
+        dependent:
+          type: array
+          items:
+            type: string
+
+    ValidationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/NormalizationResult'
+
+    NormalizationResult:
+      type: object
+      properties:
+        schema_name:
+          type: string
+        candidate_keys:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        diagnosis:
+          type: object
+          properties:
+            current_nf:
+              type: string
+            violations:
+              type: array
+              items:
+                type: string
+            didactic_steps:
+              type: array
+            suggestions:
+              type: array
+              items:
+                type: string
+        is_fully_normalized:
+          type: boolean
+        message:
+          type: string
+
+    ExplainRequest:
+      type: object
+      required: [attributes, dependencies]
+      properties:
+        attributes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 50
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionalDependency'
+          maxItems: 100
+
+    DecomposeRequest:
+      type: object
+      required: [table_name, attributes, dependencies]
+      properties:
+        table_name:
+          type: string
+          maxLength: 100
+        attributes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 100
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionalDependency'
+          maxItems: 200
+
+    ValidateUpToRequest:
+      type: object
+      required: [table_name, attributes, dependencies, target_nf]
+      properties:
+        table_name:
+          type: string
+          maxLength: 100
+        attributes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 100
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/FunctionalDependency'
+          maxItems: 200
+        target_nf:
+          type: string
+          enum: [1FN, 2FN, 3FN, BCNF, 4FN, 5FN]
+
+    CsvImportRequest:
+      type: object
+      properties:
+        csv:
+          type: string
+          description: Raw CSV content (alternative to csv_file)
+        csv_file:
+          type: string
+          format: binary
+          description: CSV file upload (alternative to csv)
+        table_name:
+          type: string
+          maxLength: 100
+        has_header:
+          type: boolean
+          default: true
+        delimiter:
+          type: string
+          enum: [",", ";", "\t", "|"]
+
+    ReportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            generated_at:
+              type: string
+              format: date-time
+            schema:
+              type: object
+            diagnosis:
+              type: object
+            decomposition:
+              type: object
+            sql:
+              type: string
+            recommendations:
+              type: array
+              items:
+                type: string
+
+    Quest:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        quest_type:
+          type: string
+        difficulty:
+          type: integer
+        xp_reward:
+          type: integer
+        nf_requirement:
+          type: string
+        is_active:
+          type: boolean
+
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        xp_reward:
+          type: integer
+        criteria_type:
+          type: string
+        criteria_value:
+          type: string
+        unlocked:
+          type: boolean
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        rank:
+          type: integer
+        user_id:
+          type: integer
+        apodo:
+          type: string
+        xp:
+          type: integer
+        rango:
+          type: string
+
+    HealthResponse:
+      type: object
+      properties:
+        app:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+          enum: [running, degraded]
+        timestamp:
+          type: string
+          format: date-time
+        checks:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [healthy, unhealthy]
+            cache:
+              type: string
+              enum: [healthy, unhealthy]
+
+    AdminDashboard:
+      type: object
+      properties:
+        total_users:
+          type: integer
+        active_users:
+          type: integer
+        total_schemas:
+          type: integer
+        total_blocked_terms:
+          type: integer
+        recent_users:
+          type: array
+          items:
+            type: object
+
+    BlockedTerm:
+      type: object
+      properties:
+        id:
+          type: integer
+        term:
+          type: string
+        category:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+        description:
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimitError:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+paths:
+  # ============================================
+  # Authentication
+  # ============================================
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      description: Creates a new user account with initial learning domains and returns a Bearer token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correo, apodo, password, password_confirmation]
+              properties:
+                correo:
+                  type: string
+                  format: email
+                apodo:
+                  type: string
+                  maxLength: 50
+                password:
+                  type: string
+                  minLength: 8
+                password_confirmation:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AuthResponse'
+                  - type: object
+                    properties:
+                      user:
+                        allOf:
+                          - $ref: '#/components/schemas/User'
+                          - type: object
+                            properties:
+                              dominios_aprendizaje:
+                                type: array
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Authenticate user
+      description: Authenticates user credentials and returns a Bearer token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correo, password]
+              properties:
+                correo:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AuthResponse'
+                  - type: object
+                    properties:
+                      user:
+                        allOf:
+                          - $ref: '#/components/schemas/User'
+                          - type: object
+                            properties:
+                              dominios_aprendizaje:
+                                type: array
+        '403':
+          description: Account disabled
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout current user
+      description: Revokes the current access token
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current authenticated user
+      description: Returns the authenticated user's profile with learning domains and achievements
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    allOf:
+                      - $ref: '#/components/schemas/User'
+                      - type: object
+                        properties:
+                          dominios_aprendizaje:
+                            type: array
+                          logros:
+                            type: array
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/profile:
+    put:
+      tags: [Authentication]
+      summary: Update user profile
+      description: Updates the authenticated user's profile (apodo only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apodo:
+                  type: string
+                  maxLength: 50
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/forgot-password:
+    post:
+      tags: [Authentication]
+      summary: Request password reset token
+      description: Generates a password reset token and logs it (no email sending in dev)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correo]
+              properties:
+                correo:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset token generated (same response regardless of email existence)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /auth/reset-password:
+    post:
+      tags: [Authentication]
+      summary: Reset password with token
+      description: Resets the user password using a valid reset token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password, password_confirmation]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ============================================
+  # Didactic Validation
+  # ============================================
+  /didactic-validate:
+    post:
+      tags: [Didactic Validation]
+      summary: Validate schema with didactic feedback
+      description: Validates a schema and returns educational feedback explaining normalization concepts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        '200':
+          description: Validation with didactic feedback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /quick-analyze:
+    post:
+      tags: [Didactic Validation]
+      summary: Quick table analysis without dependencies
+      description: Analyzes a table schema for basic structure (no functional dependencies required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [table_name, attributes]
+              properties:
+                table_name:
+                  type: string
+                  maxLength: 100
+                attributes:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  maxItems: 100
+      responses:
+        '200':
+          description: Quick analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================
+  # Normalization Engine
+  # ============================================
+  /validate-schema:
+    post:
+      tags: [Normalization]
+      summary: Validate schema against normalization rules
+      description: Validates a relation schema and returns normalization diagnosis with educational steps
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        '200':
+          description: Validation result with gamification data if authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/NormalizationResult'
+                  gamification:
+                    type: object
+                    nullable: true
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /export-validation:
+    post:
+      tags: [Normalization]
+      summary: Export validation diagnosis
+      description: Validates a schema and returns results with export metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+      responses:
+        '200':
+          description: Validation with export information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/NormalizationResult'
+                  export:
+                    type: object
+                    properties:
+                      format:
+                        type: string
+                      filename:
+                        type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================
+  # Educational Explanations
+  # ============================================
+  /explain/closure:
+    post:
+      tags: [Educational]
+      summary: Explain attribute closure step-by-step
+      description: Computes the closure of a set of attributes and shows each step for educational purposes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExplainRequest'
+      responses:
+        '200':
+          description: Closure explanation with steps
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /explain/candidate-keys:
+    post:
+      tags: [Educational]
+      summary: Explain candidate key discovery
+      description: Finds all candidate keys and explains the discovery process step-by-step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExplainRequest'
+      responses:
+        '200':
+          description: Candidate key explanation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /explain/decomposition:
+    post:
+      tags: [Educational]
+      summary: Explain 3NF decomposition strategy
+      description: Shows the step-by-step process of decomposing a schema into 3NF
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExplainRequest'
+      responses:
+        '200':
+          description: Decomposition explanation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================
+  # CSV Import
+  # ============================================
+  /import/csv:
+    post:
+      tags: [Import]
+      summary: Import CSV data
+      description: Imports a CSV file or raw CSV content and discovers columns and functional dependencies
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CsvImportRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CsvImportRequest'
+      responses:
+        '200':
+          description: CSV imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      table_name:
+                        type: string
+                      columns:
+                        type: array
+                        items:
+                          type: object
+                      discovered_fds:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FunctionalDependency'
+                      row_count:
+                        type: integer
+                      attribute_count:
+                        type: integer
+                      message:
+                        type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /import/csv-and-validate:
+    post:
+      tags: [Import]
+      summary: Import CSV and validate normalization
+      description: Imports a CSV file and runs normalization diagnosis on the discovered schema
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CsvImportRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CsvImportRequest'
+      responses:
+        '200':
+          description: CSV imported and validated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      table_name:
+                        type: string
+                      columns:
+                        type: array
+                      discovered_fds:
+                        type: array
+                      row_count:
+                        type: integer
+                      attribute_count:
+                        type: integer
+                      candidate_keys:
+                        type: array
+                      normalization:
+                        type: object
+                      message:
+                        type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================
+  # DDL Parser
+  # ============================================
+  /parse/ddl:
+    post:
+      tags: [Import]
+      summary: Parse DDL statement
+      description: Parses a SQL DDL CREATE TABLE statement to extract schema information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ddl]
+              properties:
+                ddl:
+                  type: string
+      responses:
+        '200':
+          description: DDL parsed successfully
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================
+  # Health
+  # ============================================
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      description: Returns API health status including database and cache checks
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # ============================================
+  # Academy
+  # ============================================
+  /academy:
+    get:
+      tags: [Academy]
+      summary: List all normal form explanations
+      description: Returns summaries of all available normalization form explanations
+      responses:
+        '200':
+          description: List of normal form summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      normal_forms:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            title:
+                              type: string
+                            description:
+                              type: string
+                            rules_count:
+                              type: integer
+                            has_exercise:
+                              type: boolean
+                      total:
+                        type: integer
+                      learning_path:
+                        type: array
+                        items:
+                          type: string
+
+  /academy/explain/{nf}:
+    get:
+      tags: [Academy]
+      summary: Get explanation for a specific normal form
+      description: Returns detailed educational content about a normalization form
+      parameters:
+        - name: nf
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [1FN, 2FN, 3FN, BCNF, 4FN, 5FN]
+          description: Normal form identifier
+      responses:
+        '200':
+          description: Normal form explanation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /academy/exercise:
+    get:
+      tags: [Academy]
+      summary: Generate a practice exercise
+      description: Generates an exercise for practicing normalization concepts
+      parameters:
+        - name: nf
+          in: query
+          schema:
+            type: string
+            default: "1FN"
+          description: Target normal form
+        - name: difficulty
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Difficulty level
+      responses:
+        '200':
+          description: Generated exercise
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /academy/evaluate:
+    post:
+      tags: [Academy]
+      summary: Evaluate exercise answer
+      description: Evaluates a user's answer to an academy exercise
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [exercise_id, user_answer, expected_solution]
+              properties:
+                exercise_id:
+                  type: string
+                user_answer:
+                  type: array
+                expected_solution:
+                  type: array
+      responses:
+        '200':
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /academy/decompose:
+    post:
+      tags: [Academy]
+      summary: Decompose schema to 3NF
+      description: Performs a full 3NF decomposition with explanations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecomposeRequest'
+      responses:
+        '200':
+          description: Decomposition result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /academy/validate-up-to:
+    post:
+      tags: [Academy]
+      summary: Validate up to a specific normal form
+      description: Checks whether a schema complies with all normal forms up to a target
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateUpToRequest'
+      responses:
+        '200':
+          description: Validation against target normal form
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      target_nf:
+                        type: string
+                      current_nf:
+                        type: string
+                      compliant:
+                        type: boolean
+                      violations:
+                        type: array
+                      message:
+                        type: string
+                      diagnosis:
+                        type: object
+                      nf_progress:
+                        type: array
+                      nf_reached:
+                        type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================
+  # Reports
+  # ============================================
+  /report/generate:
+    post:
+      tags: [Reports]
+      summary: Generate normalization report
+      description: Generates a comprehensive report including diagnosis, decomposition, and SQL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecomposeRequest'
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # ============================================
+  # Analytics (Protected)
+  # ============================================
+  /analytics/mastery/{userId}:
+    get:
+      tags: [Analytics]
+      summary: Get user mastery data
+      description: Returns concept mastery percentages for a user based on puzzle attempts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Mastery data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        concept:
+                          type: string
+                        percentage:
+                          type: number
+                        mastered:
+                          type: boolean
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /analytics/history/{userId}:
+    get:
+      tags: [Analytics]
+      summary: Get user validation history
+      description: Returns the last 20 schema validations performed by a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Validation history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================
+  # Schemas (Protected)
+  # ============================================
+  /schemas:
+    get:
+      tags: [Schemas]
+      summary: List user schemas
+      description: Returns all saved schemas for the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of schemas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /schemas/{id}:
+    get:
+      tags: [Schemas]
+      summary: Get schema details
+      description: Returns a specific schema with its validations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Schema details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    delete:
+      tags: [Schemas]
+      summary: Delete a schema
+      description: Deletes one of the authenticated user's schemas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Schema deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================
+  # Progress (Protected)
+  # ============================================
+  /progress:
+    get:
+      tags: [Progress]
+      summary: Get user progress
+      description: Returns the authenticated user's academic progress
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /progress/learning-path:
+    get:
+      tags: [Progress]
+      summary: Get learning path
+      description: Returns the recommended learning path based on user progress
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Learning path
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================
+  # Quests (Protected)
+  # ============================================
+  /quests:
+    get:
+      tags: [Quests]
+      summary: List all quests
+      description: Returns paginated list of active quests
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of quests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Quest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /quests/{id}:
+    get:
+      tags: [Quests]
+      summary: Get quest details
+      description: Returns detailed information about a specific quest
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Quest details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    allOf:
+                      - $ref: '#/components/schemas/Quest'
+                      - type: object
+                        properties:
+                          initial_schema_json:
+                            type: object
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /quests/{id}/start:
+    post:
+      tags: [Quests]
+      summary: Start a quest
+      description: Creates a new attempt for the specified quest
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Quest started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+        '409':
+          description: Active attempt already exists
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /quests/{id}/submit:
+    post:
+      tags: [Quests]
+      summary: Submit quest answer
+      description: Submits an answer for an active quest attempt
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answer]
+              properties:
+                answer:
+                  type: object
+                hints_used:
+                  type: integer
+                  minimum: 0
+      responses:
+        '200':
+          description: Quest submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      attempt_id:
+                        type: integer
+                      status:
+                        type: string
+                      score:
+                        type: integer
+                      xp_earned:
+                        type: integer
+                  message:
+                    type: string
+        '400':
+          description: No active attempt found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /leaderboard:
+    get:
+      tags: [Quests]
+      summary: Get leaderboard
+      description: Returns top 20 users ranked by XP
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LeaderboardEntry'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================
+  # Achievements (Protected)
+  # ============================================
+  /achievements:
+    get:
+      tags: [Achievements]
+      summary: List all achievements
+      description: Returns all achievements with unlock status for the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of achievements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Achievement'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /achievements/user/{userId}:
+    get:
+      tags: [Achievements]
+      summary: Get user achievements
+      description: Returns unlocked achievements for a specific user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User achievements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================
+  # Admin (Protected + Admin)
+  # ============================================
+  /admin/dashboard:
+    get:
+      tags: [Admin]
+      summary: Admin dashboard stats
+      description: Returns aggregate statistics for the admin dashboard
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminDashboard'
+        '403':
+          description: Forbidden (not admin)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users
+      description: Returns paginated list of all users with schema counts
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '403':
+          description: Forbidden (not admin)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /admin/users/{id}/toggle:
+    post:
+      tags: [Admin]
+      summary: Toggle user active status
+      description: Enables or disables a user account
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User status toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '403':
+          description: Forbidden (not admin)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /admin/blocked-terms:
+    get:
+      tags: [Admin]
+      summary: List blocked terms
+      description: Returns all blocked terms grouped by category
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of blocked terms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BlockedTerm'
+        '403':
+          description: Forbidden (not admin)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      tags: [Admin]
+      summary: Add blocked term
+      description: Adds a new term to the blocked terms list
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [term, category, severity]
+              properties:
+                term:
+                  type: string
+                  maxLength: 100
+                category:
+                  type: string
+                  maxLength: 50
+                severity:
+                  type: string
+                  enum: [low, medium, high]
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Term added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/BlockedTerm'
+        '403':
+          description: Forbidden (not admin)
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /admin/blocked-terms/{id}:
+    delete:
+      tags: [Admin]
+      summary: Remove blocked term
+      description: Deletes a blocked term by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Term removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '403':
+          description: Forbidden (not admin)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
